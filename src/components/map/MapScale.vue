@@ -7,21 +7,11 @@ const props = defineProps({
 })
 const { map } = toRefs(props)
 
-let scaleControl = null
-
 onMounted(() => {
-  if (!map.value) return
-  scaleControl = L.control.scale({
-    position: 'bottomleft',
-    metric: true,
-    imperial: false
-  })
-  scaleControl.addTo(map.value)
+  
 })
 
 onBeforeUnmount(() => {
-  if (scaleControl && map.value) {
-    scaleControl.remove()
-  }
+  
 })
 </script>
