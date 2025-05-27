@@ -6,7 +6,7 @@
       <div class="mt-2">
         <!-- Leyenda -->
         <div>
-          <button @click="openLeyenda = !openLeyenda" class="w-full flex justify-between items-center py-2 px-3 bg-white dark:bg-surface-dark rounded-t-lg border border-gray-300 dark:border-border focus:outline-none">
+          <button @click="toggleAccordion('leyenda')" class="w-full flex justify-between items-center py-2 px-3 bg-white dark:bg-surface-dark rounded-t-lg border border-gray-300 dark:border-border focus:outline-none">
             <span class="font-medium">Leyenda</span>
             <svg :class="openLeyenda ? 'rotate-180' : ''" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
           </button>
@@ -67,7 +67,7 @@
         </div>
         <!-- Gráfica -->
         <div class="mt-2">
-          <button @click="openGrafica = !openGrafica" class="w-full flex justify-between items-center py-2 px-3 bg-white dark:bg-surface-dark rounded-t-lg border border-gray-300 dark:border-border focus:outline-none">
+          <button @click="toggleAccordion('grafica')" class="w-full flex justify-between items-center py-2 px-3 bg-white dark:bg-surface-dark rounded-t-lg border border-gray-300 dark:border-border focus:outline-none">
             <span class="font-medium">Gráfica</span>
             <svg :class="openGrafica ? 'rotate-180' : ''" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
           </button>
@@ -78,7 +78,7 @@
         </div>
         <!-- Atributo -->
         <div class="mt-2">
-          <button @click="openAtributo = !openAtributo" class="w-full flex justify-between items-center py-2 px-3 bg-white dark:bg-surface-dark rounded-t-lg border border-gray-300 dark:border-border focus:outline-none">
+          <button @click="toggleAccordion('atributo')" class="w-full flex justify-between items-center py-2 px-3 bg-white dark:bg-surface-dark rounded-t-lg border border-gray-300 dark:border-border focus:outline-none">
             <span class="font-medium">Atributo</span>
             <svg :class="openAtributo ? 'rotate-180' : ''" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
           </button>
@@ -110,6 +110,28 @@ const menuPinned = defineModel('menuPinned')
 const openLeyenda = ref(true)
 const openGrafica = ref(false)
 const openAtributo = ref(false)
+
+function toggleAccordion(section) {
+  if (section === 'leyenda') {
+    openLeyenda.value = !openLeyenda.value
+    if (openLeyenda.value) {
+      openGrafica.value = false
+      openAtributo.value = false
+    }
+  } else if (section === 'grafica') {
+    openGrafica.value = !openGrafica.value
+    if (openGrafica.value) {
+      openLeyenda.value = false
+      openAtributo.value = false
+    }
+  } else if (section === 'atributo') {
+    openAtributo.value = !openAtributo.value
+    if (openAtributo.value) {
+      openLeyenda.value = false
+      openGrafica.value = false
+    }
+  }
+}
 
 // Fallback: si no se inyecta activeLayers, muestra todas las leyendas
 const injectedLayers = inject('activeLayers', null)
