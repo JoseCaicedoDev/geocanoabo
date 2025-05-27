@@ -84,7 +84,7 @@
           </button>
           <div v-show="openAtributo" class="px-3 py-2 bg-gray-50 dark:bg-surface-dark border-x border-b border-gray-300 dark:border-border rounded-b-lg text-sm transition-all">
             <!-- Contenido del atributo -->
-            Aquí va atributos...
+            <AtributosSuelo />
           </div>
         </div>
       </div>
@@ -104,6 +104,7 @@
 </template>
 <script setup>
 import { inject, ref, computed } from 'vue'
+import AtributosSuelo from './AtributosSuelo.vue'
 const t = inject('t', k => k)
 const menuVisible = defineModel('menuVisible')
 const menuPinned = defineModel('menuPinned')
