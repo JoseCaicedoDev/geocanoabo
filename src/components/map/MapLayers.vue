@@ -91,7 +91,35 @@ onMounted(() => {
     "Embalse": wmsEmbalse,
     "Suelo": wmsSuelo
   }
-  L.control.layers(baseLayers, overlays, { collapsed: true }).addTo(map.value)
+  const layersControl = L.control.layers(baseLayers, overlays, { collapsed: true }).addTo(map.value)
+
+  // Estado de visibilidad de capas
+  const visibility = {
+    perimetro: map.value.hasLayer(wmsPerimetro),
+    rios: map.value.hasLayer(wmsRios),
+    embalse: map.value.hasLayer(wmsEmbalse),
+    suelo: map.value.hasLayer(wmsSuelo)
+  }
+  function emitVisibility() {
+    emit('layers-visibility', { ...visibility })
+  }
+  // Inicial
+  emitVisibility()
+  // Listeners para cambios en overlays
+  map.value.on('overlayadd', function(e) {
+    if (e.layer === wmsPerimetro) visibility.perimetro = true
+    if (e.layer === wmsRios) visibility.rios = true
+    if (e.layer === wmsEmbalse) visibility.embalse = true
+    if (e.layer === wmsSuelo) visibility.suelo = true
+    emitVisibility()
+  })
+  map.value.on('overlayremove', function(e) {
+    if (e.layer === wmsPerimetro) visibility.perimetro = false
+    if (e.layer === wmsRios) visibility.rios = false
+    if (e.layer === wmsEmbalse) visibility.embalse = false
+    if (e.layer === wmsSuelo) visibility.suelo = false
+    emitVisibility()
+  })
 
   // Elimina cualquier control de escala nativo de Leaflet (si existe)
   // (No agregar L.control.scale() en ninguna parte)
