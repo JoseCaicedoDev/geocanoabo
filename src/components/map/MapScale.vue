@@ -17,7 +17,7 @@ function addScaleControl() {
     scaleControlInstance = null
   }
   scaleControl = L.Control.extend({
-    options: { position: 'bottomleft' },
+    options: { position: 'bottomright' },
     onAdd: function(map) {
       const container = L.DomUtil.create('div', 'leaflet-control leaflet-scale-custom');
       container.style.background = '#fff';

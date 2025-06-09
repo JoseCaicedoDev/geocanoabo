@@ -1,7 +1,7 @@
 .leaflet-control,
 .leaflet-bottom,
 .leaflet-top {
-  z-index: 1200 !important;
+  z-index: 1000 !important;
   pointer-events: auto !important;
   margin-bottom: 24px !important;
   margin-right: 16px !important;
@@ -18,14 +18,14 @@
 
 
 .leaflet-scale-custom {
-  margin-bottom: 24px !important;
-  margin-left: 24px !important;
+  margin-bottom: 45px !important;
+  margin-right: 10px !important;
   z-index: 1300 !important;
 }
 
 .leaflet-coords-control {
-  margin-bottom: 24px !important;
-  margin-right: 24px !important;
+  margin-bottom: 10px !important;
+  margin-right: 10px !important;
   z-index: 1300 !important;
 }
 
@@ -45,3 +45,8 @@
 .leaflet-control {
   pointer-events: auto;
 }
+
+.leaflet-control-attribution {
+  margin-bottom: 0 !important;
+}
+
