@@ -163,47 +163,7 @@ onMounted(() => {
   // Elimina cualquier control de escala nativo de Leaflet (si existe)
   // (No agregar L.control.scale() en ninguna parte)
 
-  // Control personalizado de escala tipo '1:xxxxx'
-  const scaleControl = L.Control.extend({
-    options: { position: 'bottomleft' },
-    onAdd: function(map) {
-      const container = L.DomUtil.create('div', 'leaflet-control leaflet-scale-custom');
-      container.style.background = '#fff';
-      container.style.padding = '3px 12px';
-      container.style.borderRadius = '8px';
-      container.style.boxShadow = '0 2px 6px rgba(0,0,0,0.10)';
-      container.style.fontSize = '13px';
-      container.style.color = '#222';
-      function updateScale() {
-        // Calcular escala fraccionaria 1:xxxxx
-        // Tomar el centro del mapa y calcular la resolución en metros/pixel
-        const center = map.getCenter();
-        const zoom = map.getZoom();
-        // 256 px es el tamaño de tile base en Leaflet
-        const lat = center.lat * Math.PI / 180;
-        const metersPerPixel = 40075016.686 * Math.abs(Math.cos(lat)) / Math.pow(2, zoom + 8);
-        // Suponiendo pantalla estándar (96 dpi)
-        // 1 pulgada = 0.0254 m, 1 pixel ≈ 0.0002646 m
-        // Escala = (tamaño físico de pixel en el mundo real) / (tamaño de pixel en pantalla)
-        // Escala = (metros/pixel) / (0.0002646)
-        const scale = Math.round(metersPerPixel / 0.0002646);
-        // Redondear a múltiplos estándar
-        function roundScale(val) {
-          if (val < 1000) return Math.round(val/10)*10;
-          if (val < 10000) return Math.round(val/100)*100;
-          if (val < 100000) return Math.round(val/1000)*1000;
-          return Math.round(val/10000)*10000;
-        }
-        container.innerHTML = `<span style='font-family:monospace;'>Escala 1:${roundScale(scale).toLocaleString('es-ES')}</span>`;
-      }
-      map.on('zoomend moveend', updateScale);
-      setTimeout(updateScale, 200);
-      return container;
-    }
-  });
-  map.value.addControl(new scaleControl());
-
-  // El control de escala ya está añadido arriba
+  // El control de escala se añade desde MapScale.vue
 
   // --- Watch para resaltar punto seleccionado desde la tabla ---
   watch(() => props.selectedFeatureId, (newId) => {

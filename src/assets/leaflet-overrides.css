@@ -1,0 +1,47 @@
+.leaflet-control,
+.leaflet-bottom,
+.leaflet-top {
+  z-index: 1200 !important;
+  pointer-events: auto !important;
+  margin-bottom: 24px !important;
+  margin-right: 16px !important;
+  margin-left: 16px !important;
+}
+
+.leaflet-bottom {
+  /* Espacio extra para controles y créditos */
+  padding-bottom: 40px !important;
+}
+.leaflet-top {
+  padding-top: 8px !important;
+}
+
+
+.leaflet-scale-custom {
+  margin-bottom: 24px !important;
+  margin-left: 24px !important;
+  z-index: 1300 !important;
+}
+
+.leaflet-coords-control {
+  margin-bottom: 24px !important;
+  margin-right: 24px !important;
+  z-index: 1300 !important;
+}
+
+.leaflet-scale-custom, .leaflet-coords-control {
+  box-shadow: 0 2px 6px rgba(0,0,0,0.13);
+}
+
+/* Ajuste para el contenedor del mapa si es necesario */
+.leaflet-container {
+  min-height: 400px;
+  height: 100% !important;
+  width: 100% !important;
+  overflow: visible !important;
+}
+
+/* Asegura que los controles no sean tapados por la sidebar o overlays */
+.leaflet-control {
+  pointer-events: auto;
+}

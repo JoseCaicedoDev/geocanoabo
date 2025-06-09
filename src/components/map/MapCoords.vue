@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, onBeforeUnmount, toRefs } from 'vue'
+import { onMounted, onBeforeUnmount, toRefs, watch } from 'vue'
 import L from 'leaflet'
 import proj4 from 'proj4'
 
@@ -9,8 +9,9 @@ const props = defineProps({
 const { map } = toRefs(props)
 
 let coordControl = null
+let coordControlInstance = null
 
-onMounted(() => {
+function addCoordControl() {
   if (!map.value) return
 
   // Definir proyección EPSG:2202
@@ -76,7 +77,7 @@ onMounted(() => {
       this._div.innerHTML = 'Mueve el cursor sobre el mapa';
     }
   }
-  coordControl.addTo(map.value)
+  coordControlInstance = coordControl.addTo(map.value)
 
   map.value.on('mousemove', function (e) {
     coordControl.update(e.latlng)
@@ -84,11 +85,26 @@ onMounted(() => {
   map.value.on('mouseout', function () {
     coordControl.update()
   })
-})
+}
+
+onMounted(() => {
+  addCoordControl();
+});
+
+watch(map, (newMap, oldMap) => {
+  if (oldMap && coordControlInstance) {
+    oldMap.removeControl(coordControlInstance);
+    coordControlInstance = null;
+  }
+  if (newMap) {
+    addCoordControl();
+  }
+});
 
 onBeforeUnmount(() => {
-  if (coordControl && map.value) {
-    coordControl.remove()
+  if (coordControlInstance && map.value) {
+    map.value.removeControl(coordControlInstance);
+    coordControlInstance = null;
   }
 })
 </script>
