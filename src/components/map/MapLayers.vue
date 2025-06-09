@@ -212,9 +212,9 @@ onMounted(() => {
       // Reset estilo
       layer.setStyle({ radius: 5, color: "#222", weight: 1 });
       if (layer.feature && String(layer.feature.properties.id) === String(newId)) {
-        layer.setStyle({ radius: 10, color: "#FFD600", weight: 3 });
+        layer.setStyle({ radius: 10, color: "#000000", weight: 3 });
         layer.openPopup();
-        map.value.setView(layer.getLatLng(), 15, { animate: true });
+        //map.value.setView(layer.getLatLng(), 15, { animate: true });
       }
     });
   });
