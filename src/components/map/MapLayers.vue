@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted, watch, toRefs } from 'vue'
 import L from 'leaflet'
+import { OSM_TILE_URL, OSM_ATTRIBUTION, ESRI_SAT_URL, GEOSERVER_WMS_URL } from '../../urls.js'
 
 const props = defineProps({
   map: { type: Object, required: true }
@@ -12,10 +13,10 @@ onMounted(() => {
   if (!map.value) return
 
   // Capas base
-  const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  const osm = L.tileLayer(OSM_TILE_URL, {
+    attribution: OSM_ATTRIBUTION
   })
-  const esriSat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+  const esriSat = L.tileLayer(ESRI_SAT_URL, {
     attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
   })
 
@@ -47,28 +48,28 @@ onMounted(() => {
   }
 
   // Overlays
-  const wmsPerimetro = L.tileLayer.wms('http://geoserver.gira360.com:8080/geoserver/canoabo/wms', {
+  const wmsPerimetro = L.tileLayer.wms(GEOSERVER_WMS_URL, {
     layers: 'canoabo:pg_perimetro',
     format: 'image/png',
     transparent: true,
     version: '1.1.0',
     attribution: 'GeoServer Gira360',
   })
-  const wmsRios = L.tileLayer.wms('http://geoserver.gira360.com:8080/geoserver/canoabo/wms', {
+  const wmsRios = L.tileLayer.wms(GEOSERVER_WMS_URL, {
     layers: 'canoabo:pg_rios_ur',
     format: 'image/png',
     transparent: true,
     version: '1.1.0',
     attribution: 'GeoServer Gira360',
   })
-  const wmsEmbalse = L.tileLayer.wms('http://geoserver.gira360.com:8080/geoserver/canoabo/wms', {
+  const wmsEmbalse = L.tileLayer.wms(GEOSERVER_WMS_URL, {
     layers: 'canoabo:pg_embalse_ur',
     format: 'image/png',
     transparent: true,
     version: '1.1.0',
     attribution: 'GeoServer Gira360',
   })
-  const wmsSuelo = L.tileLayer.wms('http://geoserver.gira360.com:8080/geoserver/canoabo/wms', {
+  const wmsSuelo = L.tileLayer.wms(GEOSERVER_WMS_URL, {
     layers: 'canoabo:pg_Suelo8_ur',
     format: 'image/png',
     transparent: true,
