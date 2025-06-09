@@ -112,10 +112,10 @@ onMounted(() => {
       const sueloLayer = L.geoJSON(geojson, {
         pointToLayer: function(feature, latlng) {
           // Usar el nombre de la textura para elegir color
-          const nombre = feature.properties.nombre || feature.properties.textura || feature.properties.tipo || "Si";
+          const nombre = feature.properties.h1_text || "Si";
           const color = texturaColors[nombre] || "#888";
           return L.circleMarker(latlng, {
-            radius: 6,
+            radius: 5,
             fillColor: color,
             color: "#222",
             weight: 1,
