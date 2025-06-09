@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted, watch, toRefs } from 'vue'
 import L from 'leaflet'
-import { OSM_TILE_URL, OSM_ATTRIBUTION, ESRI_SAT_URL, GEOSERVER_WMS_URL } from '../../urls.js'
+import { OSM_TILE_URL, OSM_ATTRIBUTION, ESRI_SAT_URL, GEOSERVER_WMS_URL, GEOSERVER_WFS_SUELO_URL } from '../../urls.js'
 
 const props = defineProps({
   map: { type: Object, required: true }
@@ -68,59 +68,83 @@ onMounted(() => {
     transparent: true,
     version: '1.1.0',
     attribution: 'GeoServer Gira360',
-  })
-  const wmsSuelo = L.tileLayer.wms(GEOSERVER_WMS_URL, {
-    layers: 'canoabo:pg_Suelo8_ur',
-    format: 'image/png',
-    transparent: true,
-    version: '1.1.0',
-    attribution: 'GeoServer Gira360',
-  })
+  });
+
+  // Definir baseLayers y overlays SIN suelo
+  const baseLayers = {
+    "OpenStreetMap": osm,
+    "Esri Satelital": esriSat
+  };
+  const overlays = {
+    "Perímetro Canoabo": wmsPerimetro,
+    "Ríos": wmsRios,
+    "Embalse": wmsEmbalse
+  };
+  const layersControl = L.control.layers(baseLayers, overlays, { collapsed: true }).addTo(map.value);
+
+  // Capa de suelo como GeoJSON (WFS)
+  fetch(GEOSERVER_WFS_SUELO_URL)
+    .then(res => {
+      if (!res.ok) {
+        console.error('Error al obtener GeoJSON de suelo:', res.status, res.statusText);
+        return null;
+      }
+      return res.json();
+    })
+    .then(geojson => {
+      if (!geojson) return;
+      console.log('GeoJSON suelo recibido:', geojson);
+      if (!geojson.features || geojson.features.length === 0) {
+        console.warn('GeoJSON de suelo no contiene features.');
+        return;
+      }
+      // Mapeo de colores por tipo de textura
+      const texturaColors = {
+        "a": "#2d2139",
+        "aF": "#7fa7c5",
+        "F": "#3ecfc6",
+        "Fa": "#8eea70",
+        "FA": "#c2e96a",
+        "FAa": "#e3a23c",
+        "FL": "#a34b0e",
+        "Si": "#2d1e1b"
+      };
+      const sueloLayer = L.geoJSON(geojson, {
+        pointToLayer: function(feature, latlng) {
+          // Usar el nombre de la textura para elegir color
+          const nombre = feature.properties.nombre || feature.properties.textura || feature.properties.tipo || "Si";
+          const color = texturaColors[nombre] || "#888";
+          return L.circleMarker(latlng, {
+            radius: 6,
+            fillColor: color,
+            color: "#222",
+            weight: 1,
+            opacity: 1,
+            fillOpacity: 0.9
+          });
+        },
+        onEachFeature: function (feature, layer) {
+          layer.on('click', function () {
+            layer.bindPopup('<b>Suelo:</b> ' + (feature.properties.nombre || feature.properties.id)).openPopup();
+          });
+        }
+      }).addTo(map.value);
+      sueloLayer.bringToFront();
+      layersControl.addOverlay(sueloLayer, "Suelo");
+      // Forzar zoom a la extensión de la capa de suelo
+      if (sueloLayer.getBounds && sueloLayer.getBounds().isValid()) {
+        map.value.fitBounds(sueloLayer.getBounds());
+      }
+      console.log('Capa de suelo añadida al mapa. Features:', geojson.features.length);
+      emit('suelo-ready', sueloLayer);
+    })
+    .catch(err => {
+      console.error('Error en fetch de capa suelo GeoJSON:', err);
+    });
 
   // Solo la base por defecto se agrega al mapa
   esriSat.addTo(map.value)
   wmsPerimetro.addTo(map.value)
-  wmsSuelo.addTo(map.value)
-
-  const baseLayers = {
-    "OpenStreetMap": osm,
-    "Esri Satelital": esriSat
-  }
-  const overlays = {
-    "Perímetro Canoabo": wmsPerimetro,
-    "Ríos": wmsRios,
-    "Embalse": wmsEmbalse,
-    "Suelo": wmsSuelo
-  }
-  const layersControl = L.control.layers(baseLayers, overlays, { collapsed: true }).addTo(map.value)
-
-  // Estado de visibilidad de capas
-  const visibility = {
-    perimetro: map.value.hasLayer(wmsPerimetro),
-    rios: map.value.hasLayer(wmsRios),
-    embalse: map.value.hasLayer(wmsEmbalse),
-    suelo: map.value.hasLayer(wmsSuelo)
-  }
-  function emitVisibility() {
-    emit('layers-visibility', { ...visibility })
-  }
-  // Inicial
-  emitVisibility()
-  // Listeners para cambios en overlays
-  map.value.on('overlayadd', function(e) {
-    if (e.layer === wmsPerimetro) visibility.perimetro = true
-    if (e.layer === wmsRios) visibility.rios = true
-    if (e.layer === wmsEmbalse) visibility.embalse = true
-    if (e.layer === wmsSuelo) visibility.suelo = true
-    emitVisibility()
-  })
-  map.value.on('overlayremove', function(e) {
-    if (e.layer === wmsPerimetro) visibility.perimetro = false
-    if (e.layer === wmsRios) visibility.rios = false
-    if (e.layer === wmsEmbalse) visibility.embalse = false
-    if (e.layer === wmsSuelo) visibility.suelo = false
-    emitVisibility()
-  })
 
   // Elimina cualquier control de escala nativo de Leaflet (si existe)
   // (No agregar L.control.scale() en ninguna parte)
@@ -165,7 +189,6 @@ onMounted(() => {
   });
   map.value.addControl(new scaleControl());
 
-  // Emitir la capa de suelo para los popups
-  emit('suelo-ready', wmsSuelo)
+  // El control de escala ya está añadido arriba
 })
 </script>
