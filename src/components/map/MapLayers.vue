@@ -4,7 +4,8 @@ import L from 'leaflet'
 import { OSM_TILE_URL, OSM_ATTRIBUTION, ESRI_SAT_URL, GEOSERVER_WMS_URL, GEOSERVER_WFS_SUELO_URL } from '../../urls.js'
 
 const props = defineProps({
-  map: { type: Object, required: true }
+  map: { type: Object, required: true },
+  selectedFeatureId: { type: [String, Number], default: null }
 })
 const emit = defineEmits(['suelo-ready'])
 const { map } = toRefs(props)
@@ -83,6 +84,7 @@ onMounted(() => {
   const layersControl = L.control.layers(baseLayers, overlays, { collapsed: true }).addTo(map.value);
 
   // Capa de suelo como GeoJSON (WFS)
+  let selectedSueloLayer = null;
   fetch(GEOSERVER_WFS_SUELO_URL)
     .then(res => {
       if (!res.ok) {
@@ -142,6 +144,7 @@ onMounted(() => {
       }).addTo(map.value);
       sueloLayer.bringToFront();
       layersControl.addOverlay(sueloLayer, "Suelo");
+      selectedSueloLayer = sueloLayer;
       // Forzar zoom a la extensión de la capa de suelo
       if (sueloLayer.getBounds && sueloLayer.getBounds().isValid()) {
         map.value.fitBounds(sueloLayer.getBounds());
@@ -201,5 +204,19 @@ onMounted(() => {
   map.value.addControl(new scaleControl());
 
   // El control de escala ya está añadido arriba
+
+  // --- Watch para resaltar punto seleccionado desde la tabla ---
+  watch(() => props.selectedFeatureId, (newId) => {
+    if (!newId || !selectedSueloLayer) return;
+    selectedSueloLayer.eachLayer(layer => {
+      // Reset estilo
+      layer.setStyle({ radius: 5, color: "#222", weight: 1 });
+      if (layer.feature && String(layer.feature.properties.id) === String(newId)) {
+        layer.setStyle({ radius: 10, color: "#FFD600", weight: 3 });
+        layer.openPopup();
+        map.value.setView(layer.getLatLng(), 15, { animate: true });
+      }
+    });
+  });
 })
 </script>

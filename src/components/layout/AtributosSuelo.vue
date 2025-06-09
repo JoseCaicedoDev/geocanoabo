@@ -17,7 +17,7 @@
             </tr>
           </thead>
           <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
-            <tr v-for="feat in soilFeatures" :key="feat.id">
+            <tr v-for="feat in soilFeatures" :key="feat.id" @click="$emit('select-feature', feat.properties.id)" :class="{ 'bg-yellow-100 dark:bg-yellow-900': String(selectedId) === String(feat.properties.id) }">
               <td class="px-4 py-2 whitespace-nowrap font-semibold text-gray-800 dark:text-gray-100">{{ feat.properties.id }}</td>
               <td class="px-4 py-2 whitespace-nowrap text-gray-800 dark:text-gray-100">{{ feat.properties.nombre }}</td>
               <td class="px-4 py-2 whitespace-nowrap text-gray-800 dark:text-gray-100">{{ feat.properties.h1_text }}</td>
@@ -36,6 +36,8 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { GEOSERVER_WFS_SUELO_URL } from '../../urls.js'
+const props = defineProps({ selectedId: { type: [String, Number], default: null } })
+console.log('selectedId prop:', props.selectedId)
 const soilFeatures = ref([])
 const loading = ref(false)
 const error = ref('')

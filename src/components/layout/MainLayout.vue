@@ -1,11 +1,19 @@
 <template>
   <section :class="['row-start-2 row-end-3 col-span-1 h-full grid', menuVisible ? 'grid-cols-[minmax(220px,25%)_1fr]' : 'grid-cols-1', 'bg-background dark:bg-background-dark']">
-    <Sidebar v-model:menuVisible="menuVisible" v-model:menuPinned="menuPinned" />
+    <Sidebar
+      v-model:menuVisible="menuVisible"
+      v-model:menuPinned="menuPinned"
+      :selectedId="selectedFeatureId"
+      @select-feature="selectedFeatureId = $event"
+    />
     <main :class="[
       'bg-background dark:bg-background-dark w-full h-full flex-1 min-h-0 min-w-0 flex flex-col p-0 m-0 overflow-hidden relative',
       menuVisible ? 'col-start-2 col-end-3' : 'col-start-1 col-end-2'
     ]">
-      <slot />
+      <MapView
+        :selectedFeatureId="selectedFeatureId"
+        @select-feature="selectedFeatureId = $event"
+      />
       <button
         v-if="!menuVisible"
         @click="menuVisible = true"
@@ -23,7 +31,9 @@
 </template>
 <script setup>
 import Sidebar from './Sidebar.vue'
+import MapView from '../MapView.vue'
 import { ref } from 'vue'
 const menuVisible = defineModel('menuVisible')
 const menuPinned = defineModel('menuPinned')
+const selectedFeatureId = ref(null)
 </script>

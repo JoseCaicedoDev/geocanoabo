@@ -84,7 +84,7 @@
           </button>
           <div v-show="openAtributo" class="px-3 py-2 bg-gray-50 dark:bg-surface-dark border-x border-b border-gray-300 dark:border-border rounded-b-lg text-sm transition-all">
             <!-- Contenido del atributo -->
-            <AtributosSuelo />
+            <AtributosSuelo :selectedId="selectedFeatureId" @select-feature="selectedFeatureId = $event" />
           </div>
         </div>
       </div>
@@ -111,6 +111,14 @@ const menuPinned = defineModel('menuPinned')
 const openLeyenda = ref(true)
 const openGrafica = ref(false)
 const openAtributo = ref(false)
+const props = defineProps({
+  selectedId: { type: [String, Number], default: null }
+})
+const emit = defineEmits(['select-feature'])
+const selectedFeatureId = computed({
+  get: () => props.selectedId,
+  set: (val) => emit('select-feature', val)
+})
 
 function toggleAccordion(section) {
   if (section === 'leyenda') {
