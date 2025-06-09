@@ -125,7 +125,18 @@ onMounted(() => {
         },
         onEachFeature: function (feature, layer) {
           layer.on('click', function () {
-            layer.bindPopup('<b>Suelo:</b> ' + (feature.properties.nombre || feature.properties.id)).openPopup();
+            // Usa el mismo color que el punto
+            const color = texturaColors[feature.properties.h1_text] || "#888";
+            const popupContent = `
+              <div style="min-width:180px; font-family:sans-serif;">
+                <div style="font-size:1.1em; font-weight:bold; color:#3eaf7c; margin-bottom:4px;">
+                  ${feature.properties.nombre || 'Sin nombre'}
+                </div>
+                <div><b>Textura:</b> <span style="color:${color}; font-weight:bold;">${feature.properties.h1_text || '-'}</span></div>
+                <div><b>Capacidad Uso:</b> ${feature.properties.cuso || '-'}</div>
+              </div>
+            `;
+            layer.bindPopup(popupContent).openPopup();
           });
         }
       }).addTo(map.value);
