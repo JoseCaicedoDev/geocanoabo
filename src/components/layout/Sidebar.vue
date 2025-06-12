@@ -16,7 +16,7 @@
           </div>
         </div>
         <!-- Leyenda -->
-        <div>
+        <div class="mt-2">
           <button @click="toggleAccordion('leyenda')" class="w-full flex justify-between items-center py-2 px-3 bg-white dark:bg-surface-dark rounded-t-lg border border-gray-300 dark:border-border focus:outline-none">
             <span class="font-medium">Leyenda</span>
             <svg :class="openLeyenda ? 'rotate-180' : ''" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
@@ -120,10 +120,10 @@ import DoughnutSuelo from '../charts/DoughnutSuelo.vue'
 const t = inject('t', k => k)
 const menuVisible = defineModel('menuVisible')
 const menuPinned = defineModel('menuPinned')
-const openLeyenda = ref(true)
+const openLeyenda = ref(false)
 const openGrafica = ref(false)
 const openAtributo = ref(false)
-const openCapa = ref(false)
+const openCapa = ref(true)
 const props = defineProps({
   selectedId: { type: [String, Number], default: null }
 })
