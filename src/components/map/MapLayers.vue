@@ -112,36 +112,82 @@ onMounted(() => {
         "Si": "#2d1e1b"
       };
       const sueloLayer = L.geoJSON(geojson, {
-        pointToLayer: function(feature, latlng) {
-          // Usar el nombre de la textura para elegir color
-          const nombre = feature.properties.h1_text || "Si";
-          const color = texturaColors[nombre] || "#888";
-          return L.circleMarker(latlng, {
-            radius: 5,
-            fillColor: color,
-            color: "#222",
-            weight: 1,
-            opacity: 1,
-            fillOpacity: 0.9
-          });
-        },
-        onEachFeature: function (feature, layer) {
-          layer.on('click', function () {
-            // Usa el mismo color que el punto
-            const color = texturaColors[feature.properties.h1_text] || "#888";
-            const popupContent = `
-              <div style="min-width:180px; font-family:sans-serif;">
-                <div style="font-size:1.1em; font-weight:bold; color:#3eaf7c; margin-bottom:4px;">
-                  ${feature.properties.nombre || 'Sin nombre'}
-                </div>
-                <div><b>Textura:</b> <span style="color:${color}; font-weight:bold;">${feature.properties.h1_text || '-'}</span></div>
-                <div><b>Capacidad Uso:</b> ${feature.properties.cuso || '-'}</div>
-              </div>
-            `;
-            layer.bindPopup(popupContent).openPopup();
-          });
-        }
-      }).addTo(map.value);
+  pointToLayer: function(feature, latlng) {
+    // Usar el nombre de la textura para elegir color
+    const nombre = feature.properties.h1_text || "Si";
+    const color = texturaColors[nombre] || "#888";
+    return L.circleMarker(latlng, {
+      radius: 5,
+      fillColor: color,
+      color: "#222",
+      weight: 1,
+      opacity: 1,
+      fillOpacity: 0.9
+    });
+  },
+  onEachFeature: function (feature, layer) {
+    // Popup en click (igual que antes)
+    layer.on('click', function () {
+      const color = texturaColors[feature.properties.h1_text] || "#888";
+      const popupContent = `
+        <div style="min-width:180px; font-family:sans-serif;">
+          <div style="font-size:1.1em; font-weight:bold; color:#3eaf7c; margin-bottom:4px;">
+            ${feature.properties.nombre || 'Sin nombre'}
+          </div>
+          <div><b>Textura:</b> <span style="color:${color}; font-weight:bold;">${feature.properties.h1_text || '-'}</span></div>
+          <div><b>Capacidad Uso:</b> ${feature.properties.cuso || '-'}</div>
+        </div>
+      `;
+      layer.bindPopup(popupContent).openPopup();
+    });
+  }
+}).addTo(map.value);
+
+// --- LABELS DE NOMBRE ---
+let sueloLabels = [];
+function addSueloLabels() {
+  removeSueloLabels();
+  const zoom = map.value.getZoom();
+  if (zoom <= 14) return;
+  sueloLayer.eachLayer(layer => {
+    if (layer.feature && layer.feature.properties && layer.getLatLng) {
+      const nombre = layer.feature.properties.nombre;
+      if (!nombre) return;
+      const labelIcon = L.divIcon({
+        className: 'suelo-label',
+        html: `<span class="suelo-label-text">${nombre}</span>`,
+        iconSize: null,
+        iconAnchor: [0, -3] // debajo del punto
+      });
+      const labelMarker = L.marker(layer.getLatLng(), { icon: labelIcon, interactive: false });
+      labelMarker.addTo(map.value);
+      sueloLabels.push(labelMarker);
+    }
+  });
+}
+function removeSueloLabels() {
+  sueloLabels.forEach(label => map.value.removeLayer(label));
+  sueloLabels = [];
+}
+map.value.on('zoomend', () => {
+  const zoom = map.value.getZoom();
+  // Calcular escala aproximada (metros por pixel en el centro del mapa)
+  const center = map.value.getCenter();
+  const pointC = map.value.latLngToContainerPoint(center, zoom);
+  const pointX = [pointC.x + 1, pointC.y];
+  const latLngX = map.value.containerPointToLatLng(pointX, zoom);
+  const metersPerPixel = center.distanceTo(latLngX);
+  const scale = metersPerPixel * (window.devicePixelRatio || 1);
+  console.log(`Zoom: ${zoom} | Escala aprox: 1:${Math.round(1 / metersPerPixel)}`);
+  if (zoom > 14) {
+    addSueloLabels();
+  } else {
+    removeSueloLabels();
+  }
+});
+// Inicializa labels si aplica
+if (map.value.getZoom() > 14) addSueloLabels();
+
       sueloLayer.bringToFront();
       layersControl.addOverlay(sueloLayer, "Suelo");
       selectedSueloLayer = sueloLayer;
@@ -180,3 +226,24 @@ onMounted(() => {
   });
 })
 </script>
+
+<style>
+.suelo-label {
+  pointer-events: none;
+  text-align: center;
+}
+.suelo-label-text {
+  display: inline-block;
+  background: none;
+  color: #000000;
+  font-size: 10px;
+  font-family: sans-serif;
+  font-weight: 600;
+  padding: 0;
+  border-radius: 0;
+  margin-top: 2px;
+  box-shadow: none;
+  white-space: nowrap;
+  text-shadow: 0 0 5px #ffffff;
+}
+</style>
