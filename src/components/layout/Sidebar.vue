@@ -72,8 +72,8 @@
             <svg :class="openGrafica ? 'rotate-180' : ''" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
           </button>
           <div v-show="openGrafica" class="px-3 py-2 bg-gray-50 dark:bg-surface-dark border-x border-b border-gray-300 dark:border-border rounded-b-lg text-sm transition-all">
-            <!-- Contenido de la gráfica -->
-            Aquí va la gráfica...
+            <DoughnutSuelo v-if="soilFeatures.length > 0" :soilFeatures="soilFeatures" />
+            <div v-else class="text-xs text-gray-500">No hay datos de suelo disponibles</div>
           </div>
         </div>
         <!-- Atributo -->
@@ -84,7 +84,7 @@
           </button>
           <div v-show="openAtributo" class="px-3 py-2 bg-gray-50 dark:bg-surface-dark border-x border-b border-gray-300 dark:border-border rounded-b-lg text-sm transition-all">
             <!-- Contenido del atributo -->
-            <AtributosSuelo :selectedId="selectedFeatureId" @select-feature="selectedFeatureId = $event" />
+            <AtributosSuelo :selectedId="selectedFeatureId" @select-feature="selectedFeatureId = $event" @soil-features-update="onSoilFeaturesUpdate" />
           </div>
         </div>
       </div>
@@ -105,6 +105,7 @@
 <script setup>
 import { inject, ref, computed } from 'vue'
 import AtributosSuelo from './AtributosSuelo.vue'
+import DoughnutSuelo from '../charts/DoughnutSuelo.vue'
 const t = inject('t', k => k)
 const menuVisible = defineModel('menuVisible')
 const menuPinned = defineModel('menuPinned')
@@ -114,6 +115,12 @@ const openAtributo = ref(false)
 const props = defineProps({
   selectedId: { type: [String, Number], default: null }
 })
+
+// Compartir datos de suelo desde AtributosSuelo
+const soilFeatures = ref([])
+function onSoilFeaturesUpdate(features) {
+  soilFeatures.value = features
+}
 const emit = defineEmits(['select-feature'])
 const selectedFeatureId = computed({
   get: () => props.selectedId,

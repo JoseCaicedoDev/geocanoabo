@@ -36,6 +36,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { GEOSERVER_WFS_SUELO_URL } from '../../urls.js'
+const emit = defineEmits(["soil-features-update"])
 const props = defineProps({ selectedId: { type: [String, Number], default: null } })
 console.log('selectedId prop:', props.selectedId)
 const soilFeatures = ref([])
@@ -51,9 +52,12 @@ onMounted(async () => {
     if (!res.ok) throw new Error('Error al obtener datos WFS')
     const geojson = await res.json()
     soilFeatures.value = geojson.features || []
+    // Emitir los datos al padre (Sidebar)
+    emit('soil-features-update', soilFeatures.value)
   } catch (e) {
     error.value = e.message || 'Error desconocido'
     soilFeatures.value = []
+    emit('soil-features-update', [])
   } finally {
     loading.value = false
   }
