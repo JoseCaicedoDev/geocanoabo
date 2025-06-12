@@ -1,6 +1,5 @@
 <script setup>
 import { onMounted, toRefs } from 'vue'
-import L from 'leaflet'
 
 const props = defineProps({
   map: { type: Object, required: true },
@@ -33,73 +32,18 @@ function getFeatureInfoUrl(map, layer, latlng, params = {}) {
 }
 
 onMounted(() => {
-  if (!map.value || !sueloLayer.value) return
-  map.value.on('click', function(e) {
-    if (map.value.hasLayer(sueloLayer.value)) {
-      // 1. Intenta JSON primero
-      const urlJson = getFeatureInfoUrl(
-        map.value,
-        sueloLayer.value,
-        e.latlng,
-        {
-          info_format: 'application/json',
-          propertyName: ''
-        }
-      )
-      fetch(urlJson)
-        .then(response => {
-          if (!response.ok) throw new Error('No JSON')
-          return response.json()
-        })
-        .then(data => {
-          if (data.features && data.features.length > 0) {
-            const props = data.features[0].properties
-            let html = '<b>Atributos de Suelo:</b><ul>'
-            for (const key in props) {
-              html += `<li><b>${key}:</b> ${props[key]}</li>`
-            }
-            html += '</ul>'
-            L.popup()
-              .setLatLng(e.latlng)
-              .setContent(html)
-              .openOn(map.value)
-          } else {
-            L.popup()
-              .setLatLng(e.latlng)
-              .setContent('No hay datos en este punto.')
-              .openOn(map.value)
-          }
-        })
-        .catch(() => {
-          // 2. Si falla, intenta HTML
-          const urlHtml = getFeatureInfoUrl(
-            map.value,
-            sueloLayer.value,
-            e.latlng,
-            {
-              info_format: 'text/html',
-              propertyName: ''
-            }
-          )
-          fetch(urlHtml)
-            .then(response => {
-              if (!response.ok) throw new Error('No HTML')
-              return response.text()
-            })
-            .then(html => {
-              L.popup()
-                .setLatLng(e.latlng)
-                .setContent(html)
-                .openOn(map.value)
-            })
-            .catch(() => {
-              L.popup()
-                .setLatLng(e.latlng)
-                .setContent('Error consultando atributos.')
-                .openOn(map.value)
-            })
-        })
+  if (!map.value || !sueloLayer.value) return;
+  // Recorre cada layer del sueloLayer y le asocia un popup
+  sueloLayer.value.eachLayer(layer => {
+    if (layer.feature && layer.feature.properties) {
+      const props = layer.feature.properties;
+      let popupContent = '<table>' +
+        `<tr><th>Nombre:</th><td>${props.nombre ?? ''}</td></tr>` +
+        `<tr><th>Textura:</th><td>${props.h1_text ?? ''}</td></tr>` +
+        `<tr><th>Capacidad Uso:</th><td>${props.cuso ?? ''}</td></tr>` +
+        '</table>';
+      layer.bindPopup(popupContent, { maxHeight: 300 });
     }
-  })
-})
+  });
+});
 </script>
