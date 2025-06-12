@@ -4,6 +4,17 @@
     <div class="flex-1 px-4 pt-4 overflow-y-auto">
       <!-- Acordeón -->
       <div class="mt-2">
+        <!-- Capa -->
+        <div>
+          <button @click="toggleAccordion('capa')" class="w-full flex justify-between items-center py-2 px-3 bg-white dark:bg-surface-dark rounded-t-lg border border-gray-300 dark:border-border focus:outline-none">
+            <span class="font-medium">Capa</span>
+            <svg :class="openCapa ? 'rotate-180' : ''" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+          </button>
+          <div v-show="openCapa" class="px-3 py-2 bg-gray-50 dark:bg-surface-dark border-x border-b border-gray-300 dark:border-border rounded-b-lg text-sm transition-all">
+            <!-- Contenido de la sección Capa -->
+            <div class="text-xs text-gray-500">Aquí irá la gestión de capas</div>
+          </div>
+        </div>
         <!-- Leyenda -->
         <div>
           <button @click="toggleAccordion('leyenda')" class="w-full flex justify-between items-center py-2 px-3 bg-white dark:bg-surface-dark rounded-t-lg border border-gray-300 dark:border-border focus:outline-none">
@@ -112,6 +123,7 @@ const menuPinned = defineModel('menuPinned')
 const openLeyenda = ref(true)
 const openGrafica = ref(false)
 const openAtributo = ref(false)
+const openCapa = ref(false)
 const props = defineProps({
   selectedId: { type: [String, Number], default: null }
 })
@@ -134,23 +146,33 @@ const selectedFeatureId = computed({
 })
 
 function toggleAccordion(section) {
-  if (section === 'leyenda') {
+  if (section === 'capa') {
+    openCapa.value = !openCapa.value
+    if (openCapa.value) {
+      openLeyenda.value = false
+      openGrafica.value = false
+      openAtributo.value = false
+    }
+  } else if (section === 'leyenda') {
     openLeyenda.value = !openLeyenda.value
     if (openLeyenda.value) {
       openGrafica.value = false
       openAtributo.value = false
+      openCapa.value = false
     }
   } else if (section === 'grafica') {
     openGrafica.value = !openGrafica.value
     if (openGrafica.value) {
       openLeyenda.value = false
       openAtributo.value = false
+      openCapa.value = false
     }
   } else if (section === 'atributo') {
     openAtributo.value = !openAtributo.value
     if (openAtributo.value) {
       openLeyenda.value = false
       openGrafica.value = false
+      openCapa.value = false
     }
   }
 }
