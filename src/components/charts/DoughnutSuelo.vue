@@ -1,6 +1,6 @@
 <template>
-  <section class="doughnut-section" aria-label="Gráfico de proporción de texturas de suelo">
-    <h2 class="doughnut-title">Proporción de tipos de textura de suelo</h2>
+  <section class="doughnut-section" aria-label="Gráfico de texturas de suelo">
+    <h2 class="doughnut-title">Tipos de textura de suelo</h2>
     <canvas ref="chartRef" aria-label="Doughnut chart de texturas de suelo" role="img"></canvas>
   </section>
 </template>
@@ -14,6 +14,9 @@ const props = defineProps({
 })
 const chartRef = ref(null)
 let chartInstance = null
+let selectedTextura = null // Para toggle
+
+const emit = defineEmits(['filter-textura'])
 
 const texturaColors = {
   "a": "#2d2139",
@@ -69,7 +72,24 @@ function renderChart() {
         },
         title: { display: false }
       },
-      animation: { animateRotate: true, animateScale: true }
+      animation: { animateRotate: true, animateScale: true },
+      onClick: (evt, elements) => {
+        if (!elements.length) {
+          emit('filter-textura', null)
+          selectedTextura = null
+          return
+        }
+        const idx = elements[0].index
+        const label = labels[idx]
+        // Toggle: si ya está seleccionada, deselecciona
+        if (selectedTextura === label) {
+          emit('filter-textura', null)
+          selectedTextura = null
+        } else {
+          emit('filter-textura', label)
+          selectedTextura = label
+        }
+      }
     }
   })
 }

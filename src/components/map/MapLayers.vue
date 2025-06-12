@@ -5,7 +5,8 @@ import { OSM_TILE_URL, OSM_ATTRIBUTION, ESRI_SAT_URL, GEOSERVER_WMS_URL, GEOSERV
 
 const props = defineProps({
   map: { type: Object, required: true },
-  selectedFeatureId: { type: [String, Number], default: null }
+  selectedFeatureId: { type: [String, Number], default: null },
+  filterTextura: { type: String, default: null }
 })
 const emit = defineEmits(['suelo-ready'])
 const { map } = toRefs(props)
@@ -191,6 +192,17 @@ if (map.value.getZoom() > 14) addSueloLabels();
       sueloLayer.bringToFront();
       layersControl.addOverlay(sueloLayer, "Suelo");
       selectedSueloLayer = sueloLayer;
+      // Si hay filtro activo, resalta inmediatamente los puntos
+      if (props.filterTextura) {
+        sueloLayer.eachLayer(layer => {
+          const f = layer.feature;
+          if (f && f.properties && f.properties.h1_text === props.filterTextura) {
+            layer.setStyle({ radius: 7, color: "#ff2222", weight: 3 });
+          } else {
+            layer.setStyle({ radius: 5, color: "#222", weight: 1 });
+          }
+        });
+      }
       // Forzar zoom a la extensión de la capa de suelo
       if (sueloLayer.getBounds && sueloLayer.getBounds().isValid()) {
         map.value.fitBounds(sueloLayer.getBounds());
@@ -213,14 +225,33 @@ if (map.value.getZoom() > 14) addSueloLabels();
 
   // --- Watch para resaltar punto seleccionado desde la tabla ---
   watch(() => props.selectedFeatureId, (newId) => {
-    if (!newId || !selectedSueloLayer) return;
+    if (!selectedSueloLayer) return;
     selectedSueloLayer.eachLayer(layer => {
-      // Reset estilo
+      // Reset estilo base
       layer.setStyle({ radius: 5, color: "#222", weight: 1 });
-      if (layer.feature && String(layer.feature.properties.id) === String(newId)) {
+      // Resalta por selección de la tabla
+      if (newId && layer.feature && String(layer.feature.properties.id) === String(newId)) {
         layer.setStyle({ radius: 10, color: "#000000", weight: 3 });
         layer.openPopup();
-        //map.value.setView(layer.getLatLng(), 15, { animate: true });
+      }
+    });
+  });
+
+  // --- Watch para resaltar por textura seleccionada en la gráfica ---
+  watch(() => props.filterTextura, (textura) => {
+    if (!selectedSueloLayer) return;
+    selectedSueloLayer.eachLayer(layer => {
+      const f = layer.feature;
+      // Si hay filtro, resalta solo los que coinciden
+      if (textura) {
+        if (f && f.properties && f.properties.h1_text === textura) {
+          layer.setStyle({ radius: 7, color: "#ff2222", weight: 3 });
+        } else {
+          layer.setStyle({ radius: 5, color: "#222", weight: 1 });
+        }
+      } else {
+        // Sin filtro, todos normal
+        layer.setStyle({ radius: 5, color: "#222", weight: 1 });
       }
     });
   });

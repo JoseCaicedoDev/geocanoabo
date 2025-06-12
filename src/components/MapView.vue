@@ -4,14 +4,15 @@
     <div class="w-full h-full flex">
       <AtributosSuelo
         class="w-1/3 h-full"
-        :selectedId="props.selectedFeatureId"
+        :selectedId="selectedFeatureId"
         @select-feature="emit('select-feature', $event)"
       />
       <div class="w-2/3 h-full">
         <MapLayers
           v-if="map"
           :map="map"
-          :selectedFeatureId="props.selectedFeatureId"
+          :selectedFeatureId="selectedFeatureId"
+          :filterTextura="filterTextura"
           @suelo-ready="onSueloReady"
           @layers-visibility="onLayersVisibility"
         />
@@ -33,7 +34,8 @@ import MapCoords from './map/MapCoords.vue'
 import AtributosSuelo from './layout/AtributosSuelo.vue'
 
 const props = defineProps({
-  selectedFeatureId: { type: [String, Number], default: null }
+  selectedFeatureId: { type: [String, Number], default: null },
+  filterTextura: { type: String, default: null }
 })
 const emit = defineEmits(['select-feature'])
 

@@ -4,7 +4,8 @@
       v-model:menuVisible="menuVisible"
       v-model:menuPinned="menuPinned"
       :selectedId="selectedFeatureId"
-      @select-feature="selectedFeatureId = $event"
+      @select-feature="onSelectFeature"
+      @filter-textura="onFilterTextura"
     />
     <main :class="[
       'bg-background dark:bg-background-dark w-full h-full flex-1 min-h-0 min-w-0 flex flex-col p-0 m-0 overflow-hidden relative',
@@ -12,7 +13,8 @@
     ]">
       <MapView
         :selectedFeatureId="selectedFeatureId"
-        @select-feature="selectedFeatureId = $event"
+        :filterTextura="filterTextura"
+        @select-feature="onSelectFeature"
       />
       <button
         v-if="!menuVisible"
@@ -36,4 +38,12 @@ import { ref } from 'vue'
 const menuVisible = defineModel('menuVisible')
 const menuPinned = defineModel('menuPinned')
 const selectedFeatureId = ref(null)
+const filterTextura = ref(null)
+
+function onSelectFeature(id) {
+  selectedFeatureId.value = id
+}
+function onFilterTextura(textura) {
+  filterTextura.value = textura
+}
 </script>

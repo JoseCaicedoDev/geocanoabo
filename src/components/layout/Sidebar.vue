@@ -72,7 +72,7 @@
             <svg :class="openGrafica ? 'rotate-180' : ''" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
           </button>
           <div v-show="openGrafica" class="px-3 py-2 bg-gray-50 dark:bg-surface-dark border-x border-b border-gray-300 dark:border-border rounded-b-lg text-sm transition-all">
-            <DoughnutSuelo v-if="soilFeatures.length > 0" :soilFeatures="soilFeatures" />
+            <DoughnutSuelo v-if="soilFeatures.length > 0" :soilFeatures="soilFeatures" @filter-textura="onFilterTextura" />
             <div v-else class="text-xs text-gray-500">No hay datos de suelo disponibles</div>
           </div>
         </div>
@@ -121,7 +121,13 @@ const soilFeatures = ref([])
 function onSoilFeaturesUpdate(features) {
   soilFeatures.value = features
 }
-const emit = defineEmits(['select-feature'])
+
+// Propaga el filtro hacia arriba
+const emit = defineEmits(['select-feature', 'filter-textura', 'soil-features-update'])
+function onFilterTextura(textura) {
+  emit('filter-textura', textura)
+}
+
 const selectedFeatureId = computed({
   get: () => props.selectedId,
   set: (val) => emit('select-feature', val)
