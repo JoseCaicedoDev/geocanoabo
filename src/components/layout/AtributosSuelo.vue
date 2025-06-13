@@ -3,12 +3,20 @@
     <div v-if="loading" class="text-blue-600 py-2">Cargando datos...</div>
     <div v-if="error" class="text-red-600 py-2">{{ error }}</div>
     <div v-if="soilFeatures.length > 0">
-      <button
-        class="mb-2 px-3 py-1 rounded bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-600 transition"
-        @click="$emit('clear-selection')"
-      >
-        Limpiar selección
-      </button>
+      <div class="mb-3 flex items-center">
+        <span class="relative w-full">
+          <input
+            v-model="search"
+            type="text"
+            placeholder="Buscar en los atributos..."
+            class="w-full pl-9 pr-3 py-2 rounded bg-gray-700 text-gray-100 placeholder-gray-400 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+          />
+          <svg class="absolute left-2 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+        </span>
+      </div>
       <div class="overflow-x-auto rounded-lg border border-gray-200 bg-white dark:bg-gray-900 shadow" style="max-height: 350px; overflow-y: auto;">
         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
           <thead class="bg-gray-50 dark:bg-gray-800">
@@ -43,6 +51,12 @@
         </table>
       </div>
       <div class="text-xs text-gray-500 mt-2">Fuente: Servicio WFS GeoServer</div>
+      <button
+        class="mt-3 px-3 py-1 rounded bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-600 transition"
+        @click="$emit('clear-selection')"
+      >
+        Limpiar selección
+      </button>
     </div>
   </div>
 </template>
@@ -57,6 +71,7 @@ const props = defineProps({
 const soilFeatures = ref([])
 const loading = ref(false)
 const error = ref('')
+const search = ref('')
 
 const columns = [
   { key: 'id', label: 'ID', prop: 'id' },
@@ -80,11 +95,22 @@ function sortBy(key) {
   }
 }
 
+const filteredFeatures = computed(() => {
+  if (!search.value) return soilFeatures.value
+  const lowerSearch = search.value.toLowerCase()
+  return soilFeatures.value.filter(feat => {
+    return columns.some(col => {
+      const value = feat.properties[col.prop]
+      return String(value).toLowerCase().includes(lowerSearch)
+    })
+  })
+})
+
 const sortedFeatures = computed(() => {
-  if (!sortColumn.value) return soilFeatures.value
+  if (!sortColumn.value) return filteredFeatures.value
   const col = columns.find(c => c.key === sortColumn.value)
-  if (!col) return soilFeatures.value
-  return [...soilFeatures.value].sort((a, b) => {
+  if (!col) return filteredFeatures.value
+  return [...filteredFeatures.value].sort((a, b) => {
     const aVal = a.properties[col.prop]
     const bVal = b.properties[col.prop]
     if (aVal == null && bVal == null) return 0
@@ -103,9 +129,6 @@ function isSelectedRow(rowId) {
   return String(props.selectedFromMapId).trim() === String(rowId).trim() ||
          String(props.selectedFromTableId).trim() === String(rowId).trim();
 }
-
-
-
 
 onMounted(async () => {
   loading.value = true
