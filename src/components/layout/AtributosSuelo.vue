@@ -17,8 +17,11 @@
             </tr>
           </thead>
           <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
-            <tr v-for="feat in soilFeatures" :key="feat.id" @click="$emit('select-feature', feat.properties.id)" :class="{ 'bg-yellow-100 dark:bg-yellow-900': String(selectedId) === String(feat.properties.id) }">
-              <td class="px-4 py-2 whitespace-nowrap font-semibold text-gray-800 dark:text-gray-100">{{ feat.properties.id }}</td>
+            <tr v-for="feat in soilFeatures" :key="feat.properties.id" @click="$emit('select-feature', feat.properties.id)" :class="{ 'bg-yellow-100 dark:bg-yellow-900 font-bold selected-row': isSelectedRow(feat.properties.id) }">
+
+              <td class="px-4 py-2 whitespace-nowrap font-semibold text-gray-800 dark:text-gray-100">
+                {{ feat.properties.id }}
+              </td>
               <td class="px-4 py-2 whitespace-nowrap text-gray-800 dark:text-gray-100">{{ feat.properties.nombre }}</td>
               <td class="px-4 py-2 whitespace-nowrap text-gray-800 dark:text-gray-100">{{ feat.properties.h1_text }}</td>
               <td class="px-4 py-2 whitespace-nowrap text-gray-800 dark:text-gray-100">{{ feat.properties.h1_arci }}</td>
@@ -34,14 +37,24 @@
   </div>
 </template>
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch, nextTick } from 'vue'
 import { GEOSERVER_WFS_SUELO_URL } from '../../urls.js'
 const emit = defineEmits(["soil-features-update"])
-const props = defineProps({ selectedId: { type: [String, Number], default: null } })
-console.log('selectedId prop:', props.selectedId)
+const props = defineProps({
+  selectedFromMapId: { type: [String, Number], default: null },
+  selectedFromTableId: { type: [String, Number], default: null }
+})
 const soilFeatures = ref([])
 const loading = ref(false)
 const error = ref('')
+
+function isSelectedRow(rowId) {
+  return String(props.selectedFromMapId).trim() === String(rowId).trim() ||
+         String(props.selectedFromTableId).trim() === String(rowId).trim();
+}
+
+
+
 
 onMounted(async () => {
   loading.value = true
@@ -63,3 +76,10 @@ onMounted(async () => {
   }
 })
 </script>
+
+<style scoped>
+.selected-row {
+  background: #ffe066 !important;
+  font-weight: bold !important;
+}
+</style>

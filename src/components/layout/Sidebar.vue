@@ -11,8 +11,10 @@
             <svg :class="openCapa ? 'rotate-180' : ''" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
           </button>
           <div v-show="openCapa" class="px-3 py-2 bg-gray-50 dark:bg-surface-dark border-x border-b border-gray-300 dark:border-border rounded-b-lg text-sm transition-all">
-            <!-- Contenido de la sección Capa -->
-            <div class="text-xs text-gray-500">Aquí irá la gestión de capas</div>
+            <div v-for="(label, key) in capaLabels" :key="key" class="flex items-center mb-2">
+              <input type="checkbox" :id="'capa-' + key" :checked="activeLayers[key]" @change="() => toggleLayer(key)" class="mr-2" />
+              <label :for="'capa-' + key">{{ label }}</label>
+            </div>
           </div>
         </div>
         <!-- Leyenda -->
@@ -95,7 +97,9 @@
           </button>
           <div v-show="openAtributo" class="px-3 py-2 bg-gray-50 dark:bg-surface-dark border-x border-b border-gray-300 dark:border-border rounded-b-lg text-sm transition-all">
             <!-- Contenido del atributo -->
-            <AtributosSuelo :selectedId="selectedFeatureId" @select-feature="selectedFeatureId = $event" @soil-features-update="onSoilFeaturesUpdate" />
+            <!-- selectedId viene directo del padre y solo se usa para resaltar la tabla -->
+<!-- selectedId viene directo del padre y solo se usa para resaltar la tabla -->
+<AtributosSuelo :selectedFromMapId="props.selectedFromMapId" :selectedFromTableId="props.selectedFromTableId" @select-feature="$emit('select-feature', $event)" @soil-features-update="onSoilFeaturesUpdate" />
           </div>
         </div>
       </div>
@@ -125,8 +129,36 @@ const openGrafica = ref(false)
 const openAtributo = ref(false)
 const openCapa = ref(true)
 const props = defineProps({
-  selectedId: { type: [String, Number], default: null }
+  selectedFromMapId: { type: [String, Number], default: null },
+  selectedFromTableId: { type: [String, Number], default: null }
 })
+
+const injectedLayers = inject('activeLayers', {
+  perimetro: true,
+  rios: false,
+  embalse: false,
+  suelo: true
+})
+const activeLayers = injectedLayers
+
+const capaLabels = {
+  perimetro: 'Perímetro Canoabo',
+  rios: 'Ríos',
+  embalse: 'Embalse',
+  suelo: 'Suelo'
+}
+
+function toggleLayer(key) {
+  if (activeLayers && key in activeLayers) {
+    activeLayers[key] = !activeLayers[key]
+    emit('layers-visibility', {
+      perimetro: activeLayers.perimetro,
+      rios: activeLayers.rios,
+      embalse: activeLayers.embalse,
+      suelo: activeLayers.suelo
+    })
+  }
+}
 
 // Compartir datos de suelo desde AtributosSuelo
 const soilFeatures = ref([])
@@ -140,10 +172,7 @@ function onFilterTextura(textura) {
   emit('filter-textura', textura)
 }
 
-const selectedFeatureId = computed({
-  get: () => props.selectedId,
-  set: (val) => emit('select-feature', val)
-})
+
 
 function toggleAccordion(section) {
   if (section === 'capa') {
@@ -177,12 +206,5 @@ function toggleAccordion(section) {
   }
 }
 
-// Fallback: si no se inyecta activeLayers, muestra todas las leyendas
-const injectedLayers = inject('activeLayers', null)
-const activeLayers = computed(() => injectedLayers || {
-  perimetro: true,
-  rios: true,
-  embalse: true,
-  suelo: true
-})
+
 </script>

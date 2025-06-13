@@ -3,8 +3,9 @@
     <Sidebar
       v-model:menuVisible="menuVisible"
       v-model:menuPinned="menuPinned"
-      :selectedId="selectedFeatureId"
-      @select-feature="onSelectFeature"
+      :selectedFromMapId="selectedFromMapId"
+      :selectedFromTableId="selectedFromTableId"
+      @select-feature="onTableSelect"
       @filter-textura="onFilterTextura"
     />
     <main :class="[
@@ -12,9 +13,9 @@
       menuVisible ? 'col-start-2 col-end-3' : 'col-start-1 col-end-2'
     ]">
       <MapView
-        :selectedFeatureId="selectedFeatureId"
+        :selectedFeatureId="selectedFromTableId"
         :filterTextura="filterTextura"
-        @select-feature="onSelectFeature"
+        @select-feature="onMapSelect"
       />
       <button
         v-if="!menuVisible"
@@ -37,11 +38,19 @@ import MapView from '../MapView.vue'
 import { ref } from 'vue'
 const menuVisible = defineModel('menuVisible')
 const menuPinned = defineModel('menuPinned')
-const selectedFeatureId = ref(null)
+const selectedFromMapId = ref(null) // Selección hecha en el mapa
+const selectedFromTableId = ref(null) // Selección hecha en la tabla
 const filterTextura = ref(null)
 
-function onSelectFeature(id) {
-  selectedFeatureId.value = id
+function onMapSelect(id) {
+  selectedFromMapId.value = id
+  // Si quieres sincronización bidireccional, descomenta la siguiente línea:
+  // selectedFromTableId.value = id
+}
+function onTableSelect(id) {
+  selectedFromTableId.value = id
+  // Si quieres sincronización bidireccional, descomenta la siguiente línea:
+  // selectedFromMapId.value = id
 }
 function onFilterTextura(textura) {
   filterTextura.value = textura

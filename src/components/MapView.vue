@@ -15,6 +15,7 @@
           :filterTextura="filterTextura"
           @suelo-ready="onSueloReady"
           @layers-visibility="onLayersVisibility"
+          @select-feature="$emit('select-feature', $event)"
         />
         <MapPopupSuelo v-if="map && sueloLayer" :map="map" :sueloLayer="sueloLayer" />
         <MapScale v-if="map" :map="map" />
