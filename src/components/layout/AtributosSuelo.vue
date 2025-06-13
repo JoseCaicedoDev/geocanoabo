@@ -3,32 +3,42 @@
     <div v-if="loading" class="text-blue-600 py-2">Cargando datos...</div>
     <div v-if="error" class="text-red-600 py-2">{{ error }}</div>
     <div v-if="soilFeatures.length > 0">
+      <button
+        class="mb-2 px-3 py-1 rounded bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-600 transition"
+        @click="$emit('clear-selection')"
+      >
+        Limpiar selección
+      </button>
       <div class="overflow-x-auto rounded-lg border border-gray-200 bg-white dark:bg-gray-900 shadow" style="max-height: 350px; overflow-y: auto;">
         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
           <thead class="bg-gray-50 dark:bg-gray-800">
             <tr>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-200 uppercase tracking-wider">ID</th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-200 uppercase tracking-wider">Nombre</th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-200 uppercase tracking-wider">textura</th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-200 uppercase tracking-wider">Arcilla</th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-200 uppercase tracking-wider">pH</th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-200 uppercase tracking-wider">M.O.</th>
-              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-200 uppercase tracking-wider">C. USO</th>
+              <th
+  v-for="col in columns"
+  :key="col.key"
+  class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-200 uppercase tracking-wider select-none cursor-pointer group"
+  @click="sortBy(col.key)"
+>
+  <span class="flex items-center">
+    <span>{{ col.label }}</span>
+    <span class="flex flex-col justify-center ml-1">
+      <svg v-if="sortColumn === col.key && sortOrder === 'asc'" xmlns="http://www.w3.org/2000/svg" class="inline-block h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" /></svg>
+      <svg v-if="sortColumn === col.key && sortOrder === 'desc'" xmlns="http://www.w3.org/2000/svg" class="inline-block h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+      <span v-if="sortColumn !== col.key" class="opacity-30 group-hover:opacity-60 transition flex">
+        <svg xmlns="http://www.w3.org/2000/svg" class="inline-block h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" /></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" class="inline-block h-3 w-3 ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+      </span>
+    </span>
+  </span>
+</th>
             </tr>
           </thead>
           <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
-            <tr v-for="feat in soilFeatures" :key="feat.properties.id" @click="$emit('select-feature', feat.properties.id)" :class="{ 'bg-yellow-100 dark:bg-yellow-900 font-bold selected-row': isSelectedRow(feat.properties.id) }">
-
-              <td class="px-4 py-2 whitespace-nowrap font-semibold text-gray-800 dark:text-gray-100">
-                {{ feat.properties.id }}
-              </td>
-              <td class="px-4 py-2 whitespace-nowrap text-gray-800 dark:text-gray-100">{{ feat.properties.nombre }}</td>
-              <td class="px-4 py-2 whitespace-nowrap text-gray-800 dark:text-gray-100">{{ feat.properties.h1_text }}</td>
-              <td class="px-4 py-2 whitespace-nowrap text-gray-800 dark:text-gray-100">{{ feat.properties.h1_arci }}</td>
-              <td class="px-4 py-2 whitespace-nowrap text-gray-800 dark:text-gray-100">{{ feat.properties.h1_ph }}</td>
-              <td class="px-4 py-2 whitespace-nowrap text-gray-800 dark:text-gray-100">{{ feat.properties.h1_mo }}</td>
-              <td class="px-4 py-2 whitespace-nowrap text-gray-800 dark:text-gray-100">{{ feat.properties.cuso }}</td>
-            </tr>
+            <tr v-for="feat in sortedFeatures" :key="feat.properties.id" @click="$emit('select-feature', feat.properties.id)" :class="{ 'bg-yellow-100 dark:bg-yellow-900 font-bold selected-row': isSelectedRow(feat.properties.id) }">
+  <td v-for="col in columns" :key="col.key" class="px-4 py-2 whitespace-nowrap text-gray-800 dark:text-gray-100" :class="col.key === 'id' ? 'font-semibold' : ''">
+    {{ feat.properties[col.prop] }}
+  </td>
+</tr>
           </tbody>
         </table>
       </div>
@@ -37,7 +47,7 @@
   </div>
 </template>
 <script setup>
-import { ref, onMounted, watch, nextTick } from 'vue'
+import { ref, onMounted, watch, nextTick, computed } from 'vue'
 import { GEOSERVER_WFS_SUELO_URL } from '../../urls.js'
 const emit = defineEmits(["soil-features-update"])
 const props = defineProps({
@@ -47,6 +57,47 @@ const props = defineProps({
 const soilFeatures = ref([])
 const loading = ref(false)
 const error = ref('')
+
+const columns = [
+  { key: 'id', label: 'ID', prop: 'id' },
+  { key: 'nombre', label: 'Nombre', prop: 'nombre' },
+  { key: 'h1_text', label: 'Textura', prop: 'h1_text' },
+  { key: 'h1_arci', label: 'Arcilla', prop: 'h1_arci' },
+  { key: 'h1_ph', label: 'pH', prop: 'h1_ph' },
+  { key: 'h1_mo', label: 'M.O.', prop: 'h1_mo' },
+  { key: 'cuso', label: 'C. USO', prop: 'cuso' },
+]
+
+const sortColumn = ref(null)
+const sortOrder = ref('asc')
+
+function sortBy(key) {
+  if (sortColumn.value === key) {
+    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
+  } else {
+    sortColumn.value = key
+    sortOrder.value = 'asc'
+  }
+}
+
+const sortedFeatures = computed(() => {
+  if (!sortColumn.value) return soilFeatures.value
+  const col = columns.find(c => c.key === sortColumn.value)
+  if (!col) return soilFeatures.value
+  return [...soilFeatures.value].sort((a, b) => {
+    const aVal = a.properties[col.prop]
+    const bVal = b.properties[col.prop]
+    if (aVal == null && bVal == null) return 0
+    if (aVal == null) return 1
+    if (bVal == null) return -1
+    if (typeof aVal === 'number' && typeof bVal === 'number') {
+      return sortOrder.value === 'asc' ? aVal - bVal : bVal - aVal
+    }
+    return sortOrder.value === 'asc'
+      ? String(aVal).localeCompare(String(bVal), undefined, { numeric: true })
+      : String(bVal).localeCompare(String(aVal), undefined, { numeric: true })
+  })
+})
 
 function isSelectedRow(rowId) {
   return String(props.selectedFromMapId).trim() === String(rowId).trim() ||

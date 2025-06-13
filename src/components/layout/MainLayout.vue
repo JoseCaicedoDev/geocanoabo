@@ -7,6 +7,7 @@
       :selectedFromTableId="selectedFromTableId"
       @select-feature="onTableSelect"
       @filter-textura="onFilterTextura"
+      @clear-selection="onClearSelection"
     />
     <main :class="[
       'bg-background dark:bg-background-dark w-full h-full flex-1 min-h-0 min-w-0 flex flex-col p-0 m-0 overflow-hidden relative',
@@ -51,6 +52,10 @@ function onTableSelect(id) {
   selectedFromMapId.value = null; // Limpiar selección de mapa
 }
 function onFilterTextura(textura) {
-  filterTextura.value = textura
+  filterTextura.value = textura;
+}
+function onClearSelection() {
+  selectedFromMapId.value = null;
+  selectedFromTableId.value = null;
 }
 </script>

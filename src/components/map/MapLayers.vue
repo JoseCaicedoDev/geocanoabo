@@ -186,15 +186,20 @@ emit('select-feature', feature.properties.id)
 
   // Resaltados por selección y filtro
   watch(() => props.selectedFeatureId, newId => {
-    if (!selectedSueloLayer) return
+    if (!selectedSueloLayer) return;
     selectedSueloLayer.eachLayer(layer => {
-      layer.setStyle({ radius: 5, color: '#222', weight: 1 })
+      // Siempre quitar resaltado
+      layer.setStyle({ radius: 5, color: '#222', weight: 1 });
+      // Si hay selección, resalta y abre popup
       if (newId && String(layer.feature?.properties?.id) === String(newId)) {
-        layer.setStyle({ radius: 10, color: '#000', weight: 3 })
-        layer.openPopup()
+        layer.setStyle({ radius: 10, color: '#000', weight: 3 });
+        layer.openPopup();
+      } else {
+        // Si no hay selección, cierra popup
+        layer.closePopup && layer.closePopup();
       }
-    })
-  })
+    });
+  });
 
   watch(() => props.filterTextura, textura => {
     if (!selectedSueloLayer) return

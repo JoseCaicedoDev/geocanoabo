@@ -99,7 +99,7 @@
             <!-- Contenido del atributo -->
             <!-- selectedId viene directo del padre y solo se usa para resaltar la tabla -->
 <!-- selectedId viene directo del padre y solo se usa para resaltar la tabla -->
-<AtributosSuelo :selectedFromMapId="props.selectedFromMapId" :selectedFromTableId="props.selectedFromTableId" @select-feature="$emit('select-feature', $event)" @soil-features-update="onSoilFeaturesUpdate" />
+<AtributosSuelo :selectedFromMapId="props.selectedFromMapId" :selectedFromTableId="props.selectedFromTableId" @select-feature="$emit('select-feature', $event)" @soil-features-update="onSoilFeaturesUpdate" @clear-selection="$emit('clear-selection')" />
           </div>
         </div>
       </div>
