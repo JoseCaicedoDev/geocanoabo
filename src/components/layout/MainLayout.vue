@@ -43,14 +43,12 @@ const selectedFromTableId = ref(null) // Selección hecha en la tabla
 const filterTextura = ref(null)
 
 function onMapSelect(id) {
-  selectedFromMapId.value = id
-  // Si quieres sincronización bidireccional, descomenta la siguiente línea:
-  // selectedFromTableId.value = id
+  selectedFromMapId.value = id;
+  selectedFromTableId.value = null; // Limpiar selección de tabla
 }
 function onTableSelect(id) {
-  selectedFromTableId.value = id
-  // Si quieres sincronización bidireccional, descomenta la siguiente línea:
-  // selectedFromMapId.value = id
+  selectedFromTableId.value = id;
+  selectedFromMapId.value = null; // Limpiar selección de mapa
 }
 function onFilterTextura(textura) {
   filterTextura.value = textura

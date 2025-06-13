@@ -82,4 +82,9 @@ onMounted(async () => {
   background: #ffe066 !important;
   font-weight: bold !important;
 }
+.selected-row.dark,
+.dark .selected-row {
+  background: #7c4a03 !important; /* Marrón visible en modo dark */
+  color: #fff !important;
+}
 </style>
